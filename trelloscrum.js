@@ -542,7 +542,6 @@ function List(el){
 						}
 					}
 				});
-				console.log(tshirts["XS"]);
 				var scoreTruncated = round(score);
 				var sizesCombined = roundTees(tshirts);
 				var scoreSpan = $('<span/>', {class: attr}).text( 
