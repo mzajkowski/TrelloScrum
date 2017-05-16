@@ -58,8 +58,8 @@ S4T_SETTING_DEFAULTS[SETTING_NAME_ESTIMATES] = _pointSeq.join();
 refreshSettings(); // get the settings right away (may take a little bit if using Chrome cloud storage)
 
 //internals
-var reg = /((?:^|\s?))\((\x3f|\d*\.?\d+)(\))\s?/m, //parse regexp- accepts digits, decimals and '?', surrounded by ()
-    regC = /((?:^|\s?))\[(\x3f|\d*\.?\d+)(\])\s?/m, //parse regexp- accepts digits, decimals and '?', surrounded by []
+var reg = /((?:^|\s?))\((\x3f|\d*\.?\d+|[a-zA-Z\s]*)(\))\s?/m, //parse regexp- accepts digits, decimals and '?', surrounded by ()
+    regC = /((?:^|\s?))\[(\x3f|\d*\.?\d+|[a-zA-Z\s]*)(\])\s?/m, //parse regexp- accepts digits, decimals and '?', surrounded by []
     iconUrl, pointsDoneUrl,
 	flameUrl, flame18Url,
 	scrumLogoUrl, scrumLogo18Url;
@@ -293,7 +293,7 @@ function showSettings()
 	
 		var settingsDiv = $('<div/>', {style: "padding:0px 10px;font-family:'Helvetica Neue', Arial, Helvetica, sans-serif;"});
 		var iframeHeader = $('<h3/>', {style: 'text-align: center;'});
-		iframeHeader.text('Scrum for Trello');
+		iframeHeader.text('Scrum for Trello - Cogworks Edition');
 		var settingsHeader = $('<h3/>', {style: 'text-align: center;margin-bottom:0px'});
 		settingsHeader.text('Settings');
 		var settingsInstructions = $('<div/>', {style: 'margin-bottom:10px'}).html('These settings affect how Scrum for Trello appears to <em>you</em> on all boards.  When you&apos;re done, remember to click "Save Settings" below.');
@@ -520,7 +520,8 @@ function List(el){
 			$total.empty().appendTo($list.find('.list-title,.list-header'));
 			for (var i in _pointsAttr){
 				var score=0,
-					attr = _pointsAttr[i];
+					attr = _pointsAttr[i],
+					tshirts = {};
 				$list.find('.list-card:not(.placeholder)').each(function(){
 					if(!this.listCard) return;
 					if(!isNaN(Number(this.listCard[attr].points))){
@@ -529,9 +530,25 @@ function List(el){
 							score+=Number(this.listCard[attr].points);
 						}
 					}
+					else {
+						// T-Shirt sizing
+						if(jQuery.expr.filters.visible(this)){
+							if(tshirts[this.listCard[attr].points]) {
+								tshirts[this.listCard[attr].points] += 1;
+							}
+							else {
+								tshirts[this.listCard[attr].points] = 1;
+							}
+						}
+					}
 				});
+				console.log(tshirts["XS"]);
 				var scoreTruncated = round(score);
-				var scoreSpan = $('<span/>', {class: attr}).text( (scoreTruncated>0) ? scoreTruncated : '' );
+				var sizesCombined = roundTees(tshirts);
+				var scoreSpan = $('<span/>', {class: attr}).text( 
+					(scoreTruncated>0 && sizesCombined.length>0) ? 
+						scoreTruncated + ' // ' + sizesCombined : 
+						(scoreTruncated>0) ? scoreTruncated : sizesCombined );
 				$total.append(scoreSpan);
 				computeTotal();
 			}
@@ -582,6 +599,24 @@ function List(el){
 		readCard($list.find('.list-card'));
 		setTimeout(el.list.calc);
 	});
+};
+
+//sum tshirts
+function roundTees(tshirts){
+	var arr = [];
+	if(!isNaN(tshirts["L"])) {
+		arr.push(tshirts["L"] + 'L');
+	}
+	if(!isNaN(tshirts["M"])) {
+		arr.push(tshirts["M"] + 'M');
+	}
+	if(!isNaN(tshirts["S"])) {
+		arr.push(tshirts["S"] + 'S');
+	}
+	if(!isNaN(tshirts["XS"])) {
+		arr.push(tshirts["XS"] + 'XS');
+	}
+	return arr.join(" ");
 };
 
 //.list-card pseudo
